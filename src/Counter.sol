@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-contract Counter {
-    uint256 public number;
+import {OAppRead} from "@layerzero/oapp/OAppRead.sol";
+// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-    function setNumber(uint256 newNumber) public {
-        number = newNumber;
-    }
-
-    function increment() public {
-        number++;
-    }
+contract Counter is OAppRead {
+    constructor(address _endpoint, address _delegate) OAppRead(_endpoint, _delegate) Ownable(_delegate) {}
 }
