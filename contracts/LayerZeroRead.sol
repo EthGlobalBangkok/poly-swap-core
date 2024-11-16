@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MessagingFee, Origin} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OAppRead} from "@layerzerolabs/oapp-evm/contracts/oapp/OAppRead.sol";
@@ -48,11 +49,8 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
     string public identifier;
     bytes public data = abi.encode("Nothing received yet.");
 
-    /// lzRead responses are sent from arbitrary channels with Endpoint IDs in the range of
-    /// `eid > 4294965694` (which is `type(uint32).max - 1600`).
-    uint32 constant READ_CHANNEL_EID_THRESHOLD = 4294965694;
-    uint32 constant targetEid = 10231;
-    address constant ctfExchange = 0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E;
+    // address constant ctfExchange = 0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E; // mainnet
+    address constant ctfExchange = 0xEC3975238884D8A5Aa0a3be1C098fd52C67b74D0; // sepolia base erc20 token
 
     /**
      * @notice Send a read command in loopback through channelId
@@ -63,12 +61,12 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
      * @dev Encodes the message as bytes and sends it using the `_lzSend` internal function.
      * @return receipt A `MessagingReceipt` struct containing details of the message sent.
      */
-    function send(uint32 _channelId, uint16 _appLabel, bytes calldata _options, bytes32 orderHash)
+    function send(uint32 _channelId, uint16 _appLabel, bytes calldata _options, uint32 targetEid, bytes32 orderHash)
         external
         payable
         returns (MessagingReceipt memory receipt)
     {
-        bytes memory cmd = buildCmd(_appLabel, orderHash);
+        bytes memory cmd = buildCmd(_appLabel, targetEid, orderHash);
         receipt = _lzSend(_channelId, cmd, _options, MessagingFee(msg.value, 0), payable(msg.sender));
     }
 
@@ -81,12 +79,15 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
      * // TODO add param
      * @return fee A `MessagingFee` struct containing the calculated gas fee in either the native token or ZRO token.
      */
-    function quote(uint32 _channelId, uint16 _appLabel, bytes calldata _options, bool _payInLzToken, bytes32 orderHash)
-        public
-        view
-        returns (MessagingFee memory fee)
-    {
-        bytes memory cmd = buildCmd(_appLabel, orderHash);
+    function quote(
+        uint32 _channelId,
+        uint16 _appLabel,
+        bytes calldata _options,
+        bool _payInLzToken,
+        uint32 targetEid,
+        bytes32 orderHash
+    ) public view returns (MessagingFee memory fee) {
+        bytes memory cmd = buildCmd(_appLabel, targetEid, orderHash);
         fee = _quote(_channelId, cmd, _options, _payInLzToken);
     }
 
@@ -95,14 +96,15 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
      * @param appLabel The application label to use for the message.
      * @return cmd The encoded command to be sent to to the channel.
      */
-    function buildCmd(uint16 appLabel, bytes32 orderHash) public view returns (bytes memory) {
+    function buildCmd(uint16 appLabel, uint32 targetEid, bytes32 orderHash) public view returns (bytes memory) {
         // build read requests
         EVMCallRequestV1[] memory readRequests = new EVMCallRequestV1[](1);
 
-        bytes memory callData = abi.encodeWithSelector(Trading.getOrderStatus.selector, orderHash);
+        bytes memory callData = abi.encodeWithSelector(ERC20.name.selector);
+        // bytes memory callData = abi.encodeWithSelector(Trading.getOrderStatus.selector, orderHash); // mainnet
 
         readRequests[0] = EVMCallRequestV1({
-            appRequestLabel: 0,
+            appRequestLabel: 1,
             targetEid: targetEid,
             isBlockNum: false,
             blockNumOrTimestamp: uint64(block.timestamp),

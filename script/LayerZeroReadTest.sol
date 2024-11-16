@@ -19,21 +19,29 @@ contract LayerZeroReadTest is Script {
 
         vm.broadcast();
         lzread = new LayerZeroRead(
-            0x6EDCE65403992e310A62460808c4b910D972f10f, // from here: https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
+            // 0x1a44076050125825900e736c501f859c50fE728c, // arbitrum mainnet from here: https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
+            0x6EDCE65403992e310A62460808c4b910D972f10f, // arbitrum sepolia from here: https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
             msg.sender,
             "poly-swap-core"
         );
         vm.broadcast();
 
-        lzread.setPeer(4294967295, bytes32(uint256(uint160(msg.sender))));
+        // uint32 channelId = 4294967295; // mainnet
+        uint32 channelId = 4294967295; // sepolia
+
+        lzread.setPeer(channelId, bytes32(uint256(uint160(address(lzread)))));
         vm.broadcast();
 
-        bytes memory options = OptionsBuilder.newOptions().addExecutorLzReadOption(1e8, 0xffffffff, 0);
+        uint128 _value = 0.00015 ether;
 
-        lzread.send{value: 0.001 ether}(
-            4294967295, // channel ID
+        bytes memory options = OptionsBuilder.newOptions().addExecutorLzReadOption(500000, 500, 0);
+
+        lzread.send{value: _value}(
+            channelId, // channel ID
             1, // app label
             options,
+            // 30109, // mainnet
+            40245, // sepolia
             0x190c4029e6206c1c3373571cb74b6e772da865b52755089e9d9d2fff9bb51811
         );
         vm.broadcast();
