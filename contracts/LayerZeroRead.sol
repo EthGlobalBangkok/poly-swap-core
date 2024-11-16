@@ -14,6 +14,7 @@ import {
     EVMCallRequestV1
 } from "@layerzerolabs/oapp-evm/contracts/oapp/libs/ReadCodecV1.sol";
 import {Trading} from "@polymarket-ctfe/mixins/Trading.sol";
+import {SwapWaitingOrder} from "./SwapWaitingOrder.sol";
 
 contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
     struct EvmReadRequest {
@@ -39,6 +40,8 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
     uint8 internal constant COMPUTE_SETTING_MAP_REDUCE = 2;
     uint8 internal constant COMPUTE_SETTING_NONE = 3;
 
+    bool public placeOrder = false;
+
     constructor(address _endpoint, address _delegate, string memory _identifier)
         OAppRead(_endpoint, _delegate)
         Ownable(_delegate)
@@ -61,11 +64,14 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
      * @dev Encodes the message as bytes and sends it using the `_lzSend` internal function.
      * @return receipt A `MessagingReceipt` struct containing details of the message sent.
      */
-    function send(uint32 _channelId, uint16 _appLabel, bytes calldata _options, uint32 targetEid, bytes32 orderHash)
-        external
-        payable
-        returns (MessagingReceipt memory receipt)
-    {
+    function send(
+        uint32 _channelId,
+        uint16 _appLabel,
+        bytes calldata _options,
+        uint32 targetEid,
+        SwapWaitingOrder swapWaitingOrder,
+        bytes32 orderHash
+    ) external payable returns (MessagingReceipt memory receipt) {
         bytes memory cmd = buildCmd(_appLabel, targetEid, orderHash);
         receipt = _lzSend(_channelId, cmd, _options, MessagingFee(msg.value, 0), payable(msg.sender));
     }
@@ -100,8 +106,8 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
         // build read requests
         EVMCallRequestV1[] memory readRequests = new EVMCallRequestV1[](1);
 
-        bytes memory callData = abi.encodeWithSelector(ERC20.name.selector);
-        // bytes memory callData = abi.encodeWithSelector(Trading.getOrderStatus.selector, orderHash); // mainnet
+        // bytes memory callData = abi.encodeWithSelector(ERC20.name.selector); // sepolia
+        bytes memory callData = abi.encodeWithSelector(Trading.getOrderStatus.selector, orderHash); // mainnet
 
         readRequests[0] = EVMCallRequestV1({
             appRequestLabel: 1,
@@ -138,7 +144,8 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
         address, /*_executor*/
         bytes calldata /*_extraData*/
     ) internal override {
-        data = payload;
+        (bool isActive, uint256 remaining) = abi.decode(payload, (bool, uint256));
+        placeOrder = !isActive;
     }
 
     function myInformation() public view returns (bytes memory) {

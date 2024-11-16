@@ -1,6 +1,0 @@
-[submodule "lib/polymarket-ctfe"]
-	path = lib/polymarket-ctfe
-	url = https://github.com/Polymarket/ctf-exchange
-[submodule "lib/composable-cow"]
-	path = lib/composable-cow
-	url = https://github.com/cowprotocol/composable-cow
