@@ -1,22 +1,27 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 
+import "./commons/ReadCodecV1.sol";
 // LZ
 import {OAppRead} from "@layerzero/oapp/OAppRead.sol";
 import {Origin} from "@layerzero/oapp/OApp.sol";
 import {MessagingReceipt} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
-import {EVMCallRequestV1, EVMCallComputeV1} from "@layerzero/oapp/libs/ReadCmdCodecV1.sol";
-import {ReadCodecV1} from "@layerzero-devtools/oapp/libs/ReadCmdCodecV1.sol";
+import {ILayerZeroEndpointV2} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {OAppOptionsType3} from "@layerzero/oapp/libs/OAppOptionsType3.sol";
+import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 // OZ
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // PM
 import {CTFExchange} from "@polymarket/ctfe/exchange/CTFExchange.sol";
-import {Order, OrderStatus} from "@polymarket/ctfe/libraries/OrderStructs.sol";
+import {Trading} from "@polymarket/ctfe/exchange/mixins/Trading.sol";
+import {Order, OrderStatus} from "@polymarket/ctfe/exchange/libraries/OrderStructs.sol";
 
-contract LayerZeroRead is OAppRead {
+contract LayerZeroRead is OAppRead, OAppOptionsType3 {
     /// lzRead responses are sent from arbitrary channels with Endpoint IDs in the range of
     /// `eid > 4294965694` (which is `type(uint32).max - 1600`).
     uint32 constant READ_CHANNEL_EID_THRESHOLD = 4294965694;
+    uint32 constant targetEid = 10231;
+    address constant ctfExchange = 0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E;
 
     constructor(address _endpoint, address _delegate) OAppRead(_endpoint, _delegate) Ownable(_delegate) {}
 
@@ -80,7 +85,7 @@ contract LayerZeroRead is OAppRead {
         bytes calldata /* _extraData */
     ) internal virtual {
         // Implement lzRead response handling logic here.
-        bool _readDoSomething = abi.decode(_message, (bool));
+        (bool _readDoSomething, uint256 _remaining) = abi.decode(_message, (bool, uint256));
     }
 
     /**
@@ -90,11 +95,7 @@ contract LayerZeroRead is OAppRead {
     function getCmd(bytes32 orderHash) public view returns (bytes memory) {
         // getOrderStatus() on the CTFExchange to know if a market is active or not
 
-        EVMCallRequestV1[] memory readRequests = new EVMCallRequestV1(1);
-
-        uint32 targetEid = 109;
-
-        // OrderStatus memory orderStatus =
+        EVMCallRequestV1[] memory readRequests = new EVMCallRequestV1[](1);
 
         // @notice Encode the function call
         // @dev From Uniswap Docs, this function is not marked view because it relies on calling non-view
@@ -102,7 +103,7 @@ contract LayerZeroRead is OAppRead {
         // be called on-chain. We take advantage of lzRead to call this function off-chain and get the result
         // returned back on-chain to the OApp's _lzReceive method.
         // https://docs.uniswap.org/contracts/v3/reference/periphery/interfaces/IQuoterV2
-        bytes memory callData = abi.encodeWithSelector(CTFExchange.getOrderStatus.selector, orderHash);
+        bytes memory callData = abi.encodeWithSelector(Trading.getOrderStatus.selector, orderHash);
 
         readRequests[0] = EVMCallRequestV1({
             appRequestLabel: 0,
@@ -110,11 +111,11 @@ contract LayerZeroRead is OAppRead {
             isBlockNum: false,
             blockNumOrTimestamp: uint64(block.timestamp),
             confirmations: 15,
-            to: 0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E, // CTFExchange address
+            to: ctfExchange,
             callData: callData
         });
 
-        return ReadCodecV1.encode(0, readRequests, []);
+        return ReadCodecV1.encode(0, readRequests);
     }
 
     /**
@@ -122,16 +123,16 @@ contract LayerZeroRead is OAppRead {
      * @param _extraOptions Additional messaging options, including gas and fee settings.
      * @return receipt The LayerZero messaging receipt for the request.
      */
-    function readAverageUniswapPrice(bytes calldata _extraOptions)
+    function readPolymarketData(bytes32 orderHash, bytes calldata _extraOptions)
         external
         payable
         returns (MessagingReceipt memory receipt)
     {
-        bytes memory cmd = getCmd();
+        bytes memory cmd = getCmd(orderHash);
         return _lzSend(
-            READ_CHANNEL,
+            targetEid,
             cmd,
-            combineOptions(READ_CHANNEL, READ_MSG_TYPE, _extraOptions),
+            combineOptions(targetEid, 0, _extraOptions), // TODO check msgtype (0)
             MessagingFee(msg.value, 0),
             payable(msg.sender)
         );

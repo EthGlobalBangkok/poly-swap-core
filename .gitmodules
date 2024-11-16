@@ -10,3 +10,6 @@
 [submodule "lib/polymarket-ctf-exchange"]
 	path = lib/polymarket-ctf-exchange
 	url = https://github.com/Polymarket/ctf-exchange
+[submodule "lib/solmate"]
+	path = lib/solmate
+	url = https://github.com/transmissions11/solmate
