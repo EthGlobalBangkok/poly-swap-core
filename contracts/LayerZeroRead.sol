@@ -106,7 +106,7 @@ contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
             targetEid: targetEid,
             isBlockNum: false,
             blockNumOrTimestamp: uint64(block.timestamp),
-            confirmations: 15,
+            confirmations: 0,
             to: ctfExchange,
             callData: callData
         });
