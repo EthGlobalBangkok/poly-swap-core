@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+// LZ
 import {OAppRead} from "@layerzero/oapp/OAppRead.sol";
 import {Origin} from "@layerzero/oapp/OApp.sol";
 import {MessagingReceipt} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import {EVMCallRequestV1, EVMCallComputeV1} from "@layerzero/oapp/libs/ReadCmdCodecV1.sol";
-
+// OZ
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+// PM
+import {CTFExchange} from "@polymarket/ctfe/exchange/CTFExchange.sol";
+import {Order, OrderStatus} from "@polymarket/ctfe/libraries/OrderStructs.sol";
 
 contract LayerZeroRead is OAppRead {
     /// lzRead responses are sent from arbitrary channels with Endpoint IDs in the range of
@@ -82,22 +86,14 @@ contract LayerZeroRead is OAppRead {
      * @notice Constructs a command to query the Uniswap QuoterV2 for WETH/USDC prices on all configured chains.
      * @return cmd The encoded command to request Uniswap quotes.
      */
-    function getCmd() public view returns (bytes memory) {
+    function getCmd(bytes32 orderHash) public view returns (bytes memory) {
         // getOrderStatus() on the CTFExchange to know if a market is active or not
 
         EVMCallRequestV1 memory readRequests = new EVMCallRequestV1(pairCount);
 
         uint32 targetEid = 109;
-        ChainConfig memory config = chainConfigs[targetEid];
 
-        // Define the QuoteExactInputSingleParams
-        IQuoterV2.QuoteExactInputSingleParams memory params = IQuoterV2.QuoteExactInputSingleParams({
-            tokenIn: config.tokenInAddress,
-            tokenOut: config.tokenOutAddress,
-            amountIn: 1 ether, // amountIn: 1 WETH
-            fee: config.fee,
-            sqrtPriceLimitX96: 0 // No price limit
-        });
+        // OrderStatus memory orderStatus =
 
         // @notice Encode the function call
         // @dev From Uniswap Docs, this function is not marked view because it relies on calling non-view
@@ -105,17 +101,17 @@ contract LayerZeroRead is OAppRead {
         // be called on-chain. We take advantage of lzRead to call this function off-chain and get the result
         // returned back on-chain to the OApp's _lzReceive method.
         // https://docs.uniswap.org/contracts/v3/reference/periphery/interfaces/IQuoterV2
-        bytes memory callData = abi.encodeWithSelector(IQuoterV2.quoteExactInputSingle.selector, params);
+        bytes memory callData = abi.encodeWithSelector(CTFExchange.getOrderStatus.selector, orderHash);
 
-        readRequests[i] = EVMCallRequestV1({
-            appRequestLabel: uint16(i + 1),
-            targetEid: targetEid,
-            isBlockNum: false,
-            blockNumOrTimestamp: uint64(block.timestamp),
-            confirmations: config.confirmations,
-            to: config.quoterAddress,
-            callData: callData
-        });
+        // readRequests[i] = EVMCallRequestV1({
+        //     appRequestLabel: uint16(i + 1),
+        //     targetEid: targetEid,
+        //     isBlockNum: false,
+        //     blockNumOrTimestamp: uint64(block.timestamp),
+        //     confirmations: config.confirmations,
+        //     to: config.quoterAddress,
+        //     callData: callData
+        // });
 
         EVMCallComputeV1 memory computeSettings = EVMCallComputeV1({
             computeSetting: 2, // lzMap() and lzReduce()
