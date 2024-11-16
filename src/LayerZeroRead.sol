@@ -104,26 +104,17 @@ contract LayerZeroRead is OAppRead {
         // https://docs.uniswap.org/contracts/v3/reference/periphery/interfaces/IQuoterV2
         bytes memory callData = abi.encodeWithSelector(CTFExchange.getOrderStatus.selector, orderHash);
 
-        // readRequests[i] = EVMCallRequestV1({
-        //     appRequestLabel: uint16(i + 1),
-        //     targetEid: targetEid,
-        //     isBlockNum: false,
-        //     blockNumOrTimestamp: uint64(block.timestamp),
-        //     confirmations: config.confirmations,
-        //     to: config.quoterAddress,
-        //     callData: callData
-        // });
-
-        EVMCallComputeV1 memory computeSettings = EVMCallComputeV1({
-            computeSetting: 2, // lzMap() and lzReduce()
-            targetEid: ILayerZeroEndpointV2(endpoint).eid(),
+        readRequests[0] = EVMCallRequestV1({
+            appRequestLabel: 0,
+            targetEid: targetEid,
             isBlockNum: false,
             blockNumOrTimestamp: uint64(block.timestamp),
             confirmations: 15,
-            to: address(this)
+            to: 0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E, // CTFExchange address
+            callData: callData
         });
 
-        return ReadCodecV1.encode(0, readRequests, computeSettings);
+        return ReadCodecV1.encode(0, readRequests, []);
     }
 
     /**
