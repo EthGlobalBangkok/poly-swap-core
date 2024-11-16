@@ -1,3 +1,6 @@
 [submodule "node_modules/@layerzerolabs/toolbox-foundry/lib/composable-cow"]
 	path = node_modules/@layerzerolabs/toolbox-foundry/lib/composable-cow
 	url = https://github.com/cowprotocol/composable-cow
+[submodule "node_modules/@layerzerolabs/toolbox-foundry/lib/contracts"]
+	path = node_modules/@layerzerolabs/toolbox-foundry/lib/contracts
+	url = https://github.com/cowprotocol/contracts

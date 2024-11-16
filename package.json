@@ -21,7 +21,6 @@
     "hardhat-deploy": "^0.12.1"
   },
   "dependencies": {
-    "composable-cow": "cowprotocol/composable-cow",
     "polymarket-ctf-exchange": "Polymarket/ctf-exchange"
   },
   "devDependencies": {
