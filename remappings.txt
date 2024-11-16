@@ -1,3 +1,1 @@
-@polymarket-ctfe/=lib/polymarket-ctfe/src/exchange/
-
-cowprotocol/contracts/=./lib/cow-contracts/src/contracts/
+cowprotocol/contracts/=cowprotocol/contracts/src/contracts/

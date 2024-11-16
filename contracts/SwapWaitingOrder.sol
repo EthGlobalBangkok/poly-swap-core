@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 pragma solidity ^0.8.17;
 
-import {BaseConditionalOrder} from "../lib/composable-cow/src/BaseConditionalOrder.sol";
+import {BaseConditionalOrder} from "composable-cow/src/BaseConditionalOrder.sol";
 import {ERC1271_MAGIC_VALUE, IERC1271} from "./interfaces/IERC1271.sol";
 
 // swap order placed after the market result is known

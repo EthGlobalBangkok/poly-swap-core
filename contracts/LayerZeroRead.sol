@@ -13,7 +13,7 @@ import {
     EVMCallComputeV1,
     EVMCallRequestV1
 } from "@layerzerolabs/oapp-evm/contracts/oapp/libs/ReadCodecV1.sol";
-import {Trading} from "@polymarket-ctfe/mixins/Trading.sol";
+import {Trading} from "polymarket-ctf-exchange/src/exchange/mixins/Trading.sol";
 import {SwapWaitingOrder} from "./SwapWaitingOrder.sol";
 
 contract LayerZeroRead is OAppRead, IOAppMapper, IOAppReducer {
