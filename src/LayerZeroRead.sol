@@ -6,6 +6,7 @@ import {OAppRead} from "@layerzero/oapp/OAppRead.sol";
 import {Origin} from "@layerzero/oapp/OApp.sol";
 import {MessagingReceipt} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import {EVMCallRequestV1, EVMCallComputeV1} from "@layerzero/oapp/libs/ReadCmdCodecV1.sol";
+import {ReadCodecV1} from "@layerzero-devtools/oapp/libs/ReadCmdCodecV1.sol";
 // OZ
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // PM
@@ -89,7 +90,7 @@ contract LayerZeroRead is OAppRead {
     function getCmd(bytes32 orderHash) public view returns (bytes memory) {
         // getOrderStatus() on the CTFExchange to know if a market is active or not
 
-        EVMCallRequestV1 memory readRequests = new EVMCallRequestV1(pairCount);
+        EVMCallRequestV1[] memory readRequests = new EVMCallRequestV1(1);
 
         uint32 targetEid = 109;
 
