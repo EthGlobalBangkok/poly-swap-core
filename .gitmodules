@@ -1,0 +1,3 @@
+[submodule "lib/polymarket-ctfe"]
+	path = lib/polymarket-ctfe
+	url = https://github.com/Polymarket/ctf-exchange
