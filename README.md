@@ -50,15 +50,29 @@ To access the best APYs during low volatility times, Euler's lending platform is
 
 🐣 Upcoming
 
+## Main Contracts
+
+- [LayerZeroRead.sol](./contracts/LayerZeroRead.sol)
+
+This contract is the main interface for LZ read requests and callbacks.
+
+- [SwapOrders.sol](./contracts/SwapOrders.sol)
+
+This is the Factory contracts that allows the creation of swap order contracts.
+
+- [SwapWaitingOrder.sol](./contracts/SwapWaitingOrder.sol)
+
+This contract is responsible for triggering CoW Swap after fetching data from the LayerZeroRead contract.
+
 ## Architecture
 
 <img src="./public/architecture.png" />
 
-## Contracts
+## Deployed Contracts
 
-| Chain             | address                                                                                                                      |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Sepolia arbistrum | [0xc3b689cB1DA423025953d70961b623773a4Cb3Ae](https://sepolia.arbiscan.io/address/0xc3b689cB1DA423025953d70961b623773a4Cb3Ae) |
+| Chain             | Contract          | address                                                                                                                      |
+| ----------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Sepolia arbistrum | LayerZeroRead.sol | [0xc3b689cB1DA423025953d70961b623773a4Cb3Ae](https://sepolia.arbiscan.io/address/0xc3b689cB1DA423025953d70961b623773a4Cb3Ae) |
 
 ## Transaction Examples
 
