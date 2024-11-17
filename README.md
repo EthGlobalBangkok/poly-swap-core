@@ -1,630 +1,80 @@
-<p align="center">
-  <a href="https://layerzero.network">
-    <img alt="LayerZero" style="width: 400px" src="https://docs.layerzero.network/img/LayerZero_Logo_White.svg"/>
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://layerzero.network" style="color: #a77dff">Homepage</a> | <a href="https://docs.layerzero.network/" style="color: #a77dff">Docs</a> | <a href="https://layerzero.network/developers" style="color: #a77dff">Developers</a>
-</p>
-
-<h1 align="center">OApp Read Example</h1>
-
-<p align="center">
-  <a href="https://docs.layerzero.network/v2/developers/evm/oft/quickstart" style="color: #a77dff">Quickstart</a> | <a href="https://docs.layerzero.network/contracts/oapp-configuration" style="color: #a77dff">Configuration</a> | <a href="https://docs.layerzero.network/contracts/options" style="color: #a77dff">Message Execution Options</a> | <a href="https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts" style="color: #a77dff">Endpoint, MessageLib, & Executor Addresses</a> | <a
-href="https://docs.layerzero.network/v2/developers/evm/technical-reference/dvn-addresses" style="color: #a77dff">DVN Addresses</a>
-</p>
-
-<p align="center">Template project for getting started with LayerZero's <code>OAppRead</code> contract standard.</p>
-
-## LayerZero Hardhat Helper Tasks
-
-LayerZero Devtools provides several helper hardhat tasks to easily deploy, verify, configure, connect, and send OFTs cross-chain.
-
-<details>
-<summary> <a href="https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/deploying"><code>npx hardhat lz:deploy</code></a> </summary>
-
- <br>
-
-Deploys your contract to any of the available networks in your [`hardhat.config.ts`](./hardhat.config.ts) when given a deploy tag (by default contract name) and returns a list of available networks to select for the deployment. For specifics around all deployment options, please refer to the [Deploying Contracts](https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/deploying) section of the documentation. LayerZero's `lz:deploy` utilizes `hardhat-deploy`.
-
-```yml
-'arbitrum-sepolia': {
-    eid: EndpointId.ARBSEP_V2_TESTNET,
-    url: process.env.RPC_URL_ARBSEP_TESTNET,
-    accounts,
-},
-'base-sepolia': {
-    eid: EndpointId.BASESEP_V2_TESTNET,
-    url: process.env.RPC_URL_BASE_TESTNET,
-    accounts,
-},
-```
-
-</details>
-
-<details>
-<summary> <a href="https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/start"><code>npx hardhat lz:oapp-read:config:init --oapp-config YOUR_OAPP_CONFIG --contract-name CONTRACT_NAME</code></a> </summary>
-
- <br>
-
-Initializes a `layerzero.config.ts` file for all available pathways between your hardhat networks with the current LayerZero default placeholder settings. This task can be incredibly useful for correctly formatting your config file.
-
-It also generates setting for using lzRead in each individual network
-
-You can run this task by providing the `contract-name` you want to set for the config and `file-name` you want to generate:
-
-```bash
-npx hardhat lz:oapp-read:config:init --contract-name CONTRACT_NAME --oapp-config FILE_NAME
-```
-
-This will create a `layerzero.config.ts` in your working directory populated with your contract name and connections for every pathway possible between your hardhat networks and lzRead configuration for all networks:
-
-```yml
-import { EndpointId } from '@layerzerolabs/lz-definitions'
-const arbsep_testnetContract = {
-    eid: EndpointId.ARBSEP_V2_TESTNET,
-    contractName: 'MyOAppRead',
-}
-const sepolia_testnetContract = {
-    eid: EndpointId.SEPOLIA_V2_TESTNET,
-    contractName: 'MyOAppRead',
-}
-export default {
-    contracts: [
-        {
-            contract: arbsep_testnetContract,
-            config: {
-                readChannelConfigs: [
-                    {
-                        channelId: 4294967295,
-                        readLibrary: '0x54320b901FDe49Ba98de821Ccf374BA4358a8bf6',
-                        ulnConfig: {
-                            executor: '0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897',
-                            requiredDVNs: ['0xcb998B0CeC8b45B268336b99811533728880F08a'],
-                            optionalDVNs: [],
-                            optionalDVNThreshold: 0,
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            contract: sepolia_testnetContract,
-            config: {
-                readChannelConfigs: [
-                    {
-                        channelId: 4294967295,
-                        readLibrary: '0x908E86e9cb3F16CC94AE7569Bf64Ce2CE04bbcBE',
-                        ulnConfig: {
-                            executor: '0x718B92b5CB0a5552039B593faF724D182A881eDA',
-                            requiredDVNs: ['0xDd0Dd2155e17E5363346cE2Bcb80A3990DD1F97F'],
-                            optionalDVNs: [],
-                            optionalDVNThreshold: 0,
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-    connections: [
-        {
-            from: arbsep_testnetContract,
-            to: sepolia_testnetContract,
-            config: {
-                sendLibrary: '0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E',
-                receiveLibraryConfig: { receiveLibrary: '0x75Db67CDab2824970131D5aa9CECfC9F69c69636', gracePeriod: 0 },
-                sendConfig: {
-                    executorConfig: { maxMessageSize: 10000, executor: '0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897' },
-                    ulnConfig: {
-                        confirmations: 1,
-                        requiredDVNs: ['0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8'],
-                        optionalDVNs: [],
-                        optionalDVNThreshold: 0,
-                    },
-                },
-                receiveConfig: {
-                    ulnConfig: {
-                        confirmations: 2,
-                        requiredDVNs: ['0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8'],
-                        optionalDVNs: [],
-                        optionalDVNThreshold: 0,
-                    },
-                },
-            },
-        },
-        {
-            from: sepolia_testnetContract,
-            to: arbsep_testnetContract,
-            config: {
-                sendLibrary: '0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE',
-                receiveLibraryConfig: { receiveLibrary: '0xdAf00F5eE2158dD58E0d3857851c432E34A3A851', gracePeriod: 0 },
-                sendConfig: {
-                    executorConfig: { maxMessageSize: 10000, executor: '0x718B92b5CB0a5552039B593faF724D182A881eDA' },
-                    ulnConfig: {
-                        confirmations: 2,
-                        requiredDVNs: ['0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193'],
-                        optionalDVNs: [],
-                        optionalDVNThreshold: 0,
-                    },
-                },
-                receiveConfig: {
-                    ulnConfig: {
-                        confirmations: 1,
-                        requiredDVNs: ['0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193'],
-                        optionalDVNs: [],
-                        optionalDVNThreshold: 0,
-                    },
-                },
-            },
-        },
-    ],
-}
-```
-
-</details>
-
-<details>
-<summary> <a href="https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/wiring"><code>npx hardhat lz:oapp-read:wire --oapp-config YOUR_OAPP_CONFIG</code></a> </summary>
-
- <br>
-
-Calls the configuration functions between your deployed OApp contracts on every chain based on the provided `layerzero.config.ts`.
-
-Running `lz:oapp:wire` will make the following function calls per pathway connection for a fully defined config file using your specified settings and your environment variables (Private Keys and RPCs):
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oapp/OAppCore.sol#L33-L46"><code>function setPeer(uint32 \_eid, bytes32 \_peer) public virtual onlyOwner {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L304-L311"><code>function setConfig(address \_oapp, address \_lib, SetConfigParam[] calldata \_params) external onlyRegistered(\_lib) {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oapp/libs/OAppOptionsType3.sol#L18-L36"><code>function setEnforcedOptions(EnforcedOptionParam[] calldata \_enforcedOptions) public virtual onlyOwner {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L223-L238"><code>function setSendLibrary(address \_oapp, uint32 \_eid, address \_newLib) external onlyRegisteredOrDefault(\_newLib) isSendLib(\_newLib) onlySupportedEid(\_newLib, \_eid) {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L223-L273"><code>function setReceiveLibrary(address \_oapp, uint32 \_eid, address \_newLib, uint256 \_gracePeriod) external onlyRegisteredOrDefault(\_newLib) isReceiveLib(\_newLib) onlySupportedEid(\_newLib, \_eid) {}</code></a>
-
-It will also make the following calls per network for a fully defined config file that enables lzRead
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oapp/OAppRead.sol#L15-L17"><code>function setReadChannel(uint32 \_channelId, bool \_active) public virtual onlyOwner {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L304-L311"><code>function setConfig(address \_oapp, address \_lib, SetConfigParam[] calldata \_params) external onlyRegistered(\_lib) {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oapp/libs/OAppOptionsType3.sol#L18-L36"><code>function setEnforcedOptions(EnforcedOptionParam[] calldata \_enforcedOptions) public virtual onlyOwner {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L223-L238"><code>function setSendLibrary(address \_oapp, uint32 \_eid, address \_newLib) external onlyRegisteredOrDefault(\_newLib) isSendLib(\_newLib) onlySupportedEid(\_newLib, \_eid) {}</code></a>
-
-- <a href="https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol#L223-L273"><code>function setReceiveLibrary(address \_oapp, uint32 \_eid, address \_newLib, uint256 \_gracePeriod) external onlyRegisteredOrDefault(\_newLib) isReceiveLib(\_newLib) onlySupportedEid(\_newLib, \_eid) {}</code></a>
-
-To use this task, run:
-
-```bash
-npx hardhat lz:oapp-read:wire --oapp-config YOUR_LAYERZERO_CONFIG_FILE
-```
-
-Whenever you make changes to the configuration, run `lz:oapp:wire` again. The task will check your current configuration, and only apply NEW changes.
-
-To use a Gnosis Safe multisig as the signer for these transactions, add the following to each network in your `hardhat.config.ts` and add the `--safe` flag to `lz:oapp:wire --safe`:
-
-```yml
-// hardhat.config.ts
-
-networks: {
-  // Include configurations for other networks as needed
-  fuji: {
-    /* ... */
-    // Network-specific settings
-    safeConfig: {
-      safeUrl: 'http://something', // URL of the Safe API, not the Safe itself
-      safeAddress: 'address'
-    }
-  }
-}
-```
-
-</details>
-<details>
-<summary> <a href="https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/wiring#checking-pathway-config"><code>npx hardhat lz:oapp-read:config:get --oapp-config YOUR_OAPP_CONFIG</code></a> </summary>
-
- <br>
-
-Returns your current OApp's configuration for each chain and pathway in 3 columns:
-
-- **Custom Configuration**: the changes that your `layerzero.config.ts` currently has set
-
-- **Default Configuration**: the default placeholder configuration that LayerZero provides
-
-- **Active Configuration**: the active configuration that applies to the message pathway (Defaults + Custom Values)
-
-If you do NOT explicitly set each configuration parameter, your OApp will fallback to the placeholder parameters in the default config.
-
-```bash
-┌────────────────────┬───────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────┐
-│                    │ Custom OApp Config                                                            │ Default OApp Config                                                           │ Active OApp Config                                                            │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ localNetworkName   │ arbsep                                                                        │ arbsep                                                                        │ arbsep                                                                        │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ remoteNetworkName  │ sepolia                                                                       │ sepolia                                                                       │ sepolia                                                                       │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ sendLibrary        │ 0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E                                    │ 0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E                                    │ 0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E                                    │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ receiveLibrary     │ 0x75Db67CDab2824970131D5aa9CECfC9F69c69636                                    │ 0x75Db67CDab2824970131D5aa9CECfC9F69c69636                                    │ 0x75Db67CDab2824970131D5aa9CECfC9F69c69636                                    │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ sendUlnConfig      │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │
-│                    │ │ confirmations        │ 1                                                  │ │ │ confirmations        │ 1                                                  │ │ │ confirmations        │ 1                                                  │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │
-│                    │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │
-│                    │ │                      │ └───┴────────────────────────────────────────────┘ │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │
-│                    │ │                      │                                                    │ │ │                      │                                                    │ │ │                      │                                                    │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ optionalDVNs         │                                                    │ │ │ optionalDVNs         │                                                    │ │ │ optionalDVNs         │                                                    │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ optionalDVNThreshold │ 0                                                  │ │ │ optionalDVNThreshold │ 0                                                  │ │ │ optionalDVNThreshold │ 0                                                  │ │
-│                    │ └──────────────────────┴────────────────────────────────────────────────────┘ │ └──────────────────────┴────────────────────────────────────────────────────┘ │ └──────────────────────┴────────────────────────────────────────────────────┘ │
-│                    │                                                                               │                                                                               │                                                                               │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ sendExecutorConfig │ ┌────────────────┬────────────────────────────────────────────┐               │ ┌────────────────┬────────────────────────────────────────────┐               │ ┌────────────────┬────────────────────────────────────────────┐               │
-│                    │ │ executor       │ 0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897 │               │ │ executor       │ 0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897 │               │ │ executor       │ 0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897 │               │
-│                    │ ├────────────────┼────────────────────────────────────────────┤               │ ├────────────────┼────────────────────────────────────────────┤               │ ├────────────────┼────────────────────────────────────────────┤               │
-│                    │ │ maxMessageSize │ 10000                                      │               │ │ maxMessageSize │ 10000                                      │               │ │ maxMessageSize │ 10000                                      │               │
-│                    │ └────────────────┴────────────────────────────────────────────┘               │ └────────────────┴────────────────────────────────────────────┘               │ └────────────────┴────────────────────────────────────────────┘               │
-│                    │                                                                               │                                                                               │                                                                               │
-├────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ receiveUlnConfig   │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │
-│                    │ │ confirmations        │ 2                                                  │ │ │ confirmations        │ 2                                                  │ │ │ confirmations        │ 2                                                  │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │
-│                    │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │ │                      │ │ 0 │ 0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8 │ │ │
-│                    │ │                      │ └───┴────────────────────────────────────────────┘ │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │
-│                    │ │                      │                                                    │ │ │                      │                                                    │ │ │                      │                                                    │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ optionalDVNs         │                                                    │ │ │ optionalDVNs         │                                                    │ │ │ optionalDVNs         │                                                    │ │
-│                    │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                    │ │ optionalDVNThreshold │ 0                                                  │ │ │ optionalDVNThreshold │ 0                                                  │ │ │ optionalDVNThreshold │ 0                                                  │ │
-│                    │ └──────────────────────┴────────────────────────────────────────────────────┘ │ └──────────────────────┴────────────────────────────────────────────────────┘ │ └──────────────────────┴────────────────────────────────────────────────────┘ │
-│                    │                                                                               │                                                                               │                                                                               │
-└────────────────────┴───────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────┬───────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────┐
-│                  │ Custom OApp Read Config                                               │ Default OApp Read Config                                                      │ Active OApp Read Config                                                       │
-├──────────────────┼───────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ localNetworkName │ arbsep-testnet                                                        │ arbsep-testnet                                                                │ arbsep-testnet                                                                │
-├──────────────────┼───────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ channelId        │ 4294967295                                                            │ 4294967295                                                                    │ 4294967295                                                                    │
-├──────────────────┼───────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ readLibrary      │ 0x0000000000000000000000000000000000000000                            │ 0x54320b901FDe49Ba98de821Ccf374BA4358a8bf6                                    │ 0x54320b901FDe49Ba98de821Ccf374BA4358a8bf6                                    │
-├──────────────────┼───────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────┤
-│ readUlnConfig    │ ┌──────────────────────┬────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │ ┌──────────────────────┬────────────────────────────────────────────────────┐ │
-│                  │ │ executor             │ 0x0000000000000000000000000000000000000000 │ │ │ executor             │ 0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897         │ │ │ executor             │ 0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897         │ │
-│                  │ ├──────────────────────┼────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                  │ │ requiredDVNs         │                                            │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │ │ requiredDVNs         │ ┌───┬────────────────────────────────────────────┐ │ │
-│                  │ ├──────────────────────┼────────────────────────────────────────────┤ │ │                      │ │ 0 │ 0xcb998B0CeC8b45B268336b99811533728880F08a │ │ │ │                      │ │ 0 │ 0xcb998B0CeC8b45B268336b99811533728880F08a │ │ │
-│                  │ │ optionalDVNs         │                                            │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │ │                      │ └───┴────────────────────────────────────────────┘ │ │
-│                  │ ├──────────────────────┼────────────────────────────────────────────┤ │ │                      │                                                    │ │ │                      │                                                    │ │
-│                  │ │ optionalDVNThreshold │ 0                                          │ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                  │ └──────────────────────┴────────────────────────────────────────────┘ │ │ optionalDVNs         │                                                    │ │ │ optionalDVNs         │                                                    │ │
-│                  │                                                                       │ ├──────────────────────┼────────────────────────────────────────────────────┤ │ ├──────────────────────┼────────────────────────────────────────────────────┤ │
-│                  │                                                                       │ │ optionalDVNThreshold │ 0                                                  │ │ │ optionalDVNThreshold │ 0                                                  │ │
-│                  │                                                                       │ └──────────────────────┴────────────────────────────────────────────────────┘ │ └──────────────────────┴────────────────────────────────────────────────────┘ │
-│                  │                                                                       │                                                                               │                                                                               │
-└──────────────────┴───────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────┘
-```
-
-</details>
-<details>
-<summary> <a href="https://docs.layerzero.network/v2/developers/evm/create-lz-oapp/wiring#checking-pathway-executor"><code>npx hardhat lz:oapp:config:get:executor --oapp-config YOUR_OAPP_CONFIG</code></a> </summary>
-
- <br>
-
-Returns the LayerZero Executor config for each network in your `hardhat.config.ts`. You can use this method to see the max destination gas in wei (`nativeCap`) you can request in your [`execution options`](https://docs.layerzero.network/v2/developers/evm/gas-settings/options).
-
-```bash
-┌───────────────────┬────────────────────────────────────────────┐
-│ localNetworkName  │ mantle                                     │
-├───────────────────┼────────────────────────────────────────────┤
-│ remoteNetworkName │ polygon                                    │
-├───────────────────┼────────────────────────────────────────────┤
-│ executorDstConfig │ ┌────────────────┬───────────────────────┐ │
-│                   │ │ baseGas        │ 85000                 │ │
-│                   │ ├────────────────┼───────────────────────┤ │
-│                   │ │ multiplierBps  │ 12000                 │ │
-│                   │ ├────────────────┼───────────────────────┤ │
-│                   │ │ floorMarginUSD │ 5000000000000000000   │ │
-│                   │ ├────────────────┼───────────────────────┤ │
-│                   │ │ nativeCap      │ 681000000000000000000 │ │
-│                   │ └────────────────┴───────────────────────┘ │
-│                   │                                            │
-└───────────────────┴────────────────────────────────────────────┘
-```
-
-</details>
-
-## Developing Contracts
-
-#### Installing dependencies
-
-We recommend using `pnpm` as a package manager (but you can of course use a package manager of your choice):
-
-```bash
-pnpm install
-```
-
-#### Compiling your contracts
-
-This project supports both `hardhat` and `forge` compilation. By default, the `compile` command will execute both:
-
-```bash
-pnpm compile
-```
-
-If you prefer one over the other, you can use the tooling-specific commands:
-
-```bash
-pnpm compile:forge
-pnpm compile:hardhat
-```
-
-Or adjust the `package.json` to for example remove `forge` build:
-
-```diff
-- "compile": "$npm_execpath run compile:forge && $npm_execpath run compile:hardhat",
-- "compile:forge": "forge build",
-- "compile:hardhat": "hardhat compile",
-+ "compile": "hardhat compile"
-```
-
-#### Running tests
-
-Similarly to the contract compilation, we support both `hardhat` and `forge` tests. By default, the `test` command will execute both:
-
-```bash
-pnpm test
-```
-
-If you prefer one over the other, you can use the tooling-specific commands:
-
-```bash
-pnpm test:forge
-pnpm test:hardhat
-```
-
-Or adjust the `package.json` to for example remove `hardhat` tests:
-
-```diff
-- "test": "$npm_execpath test:forge && $npm_execpath test:hardhat",
-- "test:forge": "forge test",
-- "test:hardhat": "$npm_execpath hardhat test"
-+ "test": "forge test"
-```
-
-## Deploying Contracts
-
-Set up deployer wallet/account:
-
-- Rename `.env.example` -> `.env`
-- Choose your preferred means of setting up your deployer wallet/account:
-
-```
-MNEMONIC="test test test test test test test test test test test junk"
-or...
-PRIVATE_KEY="0xabc...def"
-```
-
-- Fund this address with the corresponding chain's native tokens you want to deploy to.
-
-To deploy your contracts to your desired blockchains, run the following command in your project's folder:
-
-```bash
-npx hardhat lz:deploy
-```
-
-More information about available CLI arguments can be found using the `--help` flag:
-
-```bash
-npx hardhat lz:deploy --help
-```
-
-By following these steps, you can focus more on creating innovative omnichain solutions and less on the complexities of cross-chain communication.
-
-<br></br>
-
-## Connecting Contracts
-
-### Ethereum Configurations
-
-Fill out your `layerzero.config.ts` with the contracts you want to connect. You can generate the default config file for your declared hardhat networks by running:
-
-```bash
-npx hardhat lz:oapp-read:config:init --contract-name [YOUR_CONTRACT_NAME] --oapp-config [CONFIG_NAME]
-```
-
-> [!NOTE]
-> You may need to change the contract name if you're deploying multiple OApp contracts on different chains (e.g., OFT and OFT Adapter).
-
-<br>
-
-```typescript
-const ethereumContract: OmniPointHardhat = {
-  eid: EndpointId.ETHEREUM_V2_MAINNET,
-  contractName: "MyOAppRead",
-};
-
-const arbitrumContract: OmniPointHardhat = {
-  eid: EndpointId.ARBITRUM_V2_MAINNET,
-  contractName: "MyOAppRead",
-};
-```
-
-Then define the pathway you want to create from and to each contract:
-
-```typescript
-connections: [
-  // ETH <--> ARB PATHWAY: START
-  {
-    from: ethereumContract,
-    to: arbitrumContract,
-  },
-  {
-    from: arbitrumContract,
-    to: ethereumContract,
-  },
-  // ETH <--> ARB PATHWAY: END
-];
-```
-
-Then define the config settings for each direction of the pathway:
-
-```typescript
-connections: [
-  // ETH <--> ARB PATHWAY: START
-  {
-    from: ethereumContract,
-    to: arbitrumContract,
-    config: {
-      sendLibrary: contractsConfig.ethereum.sendLib302,
-      receiveLibraryConfig: {
-        receiveLibrary: contractsConfig.ethereum.receiveLib302,
-        gracePeriod: BigInt(0),
-      },
-      // Optional Receive Library Timeout for when the Old Receive Library Address will no longer be valid
-      receiveLibraryTimeoutConfig: {
-        lib: "0x0000000000000000000000000000000000000000",
-        expiry: BigInt(0),
-      },
-      // Optional Send Configuration
-      // @dev Controls how the `from` chain sends messages to the `to` chain.
-      sendConfig: {
-        executorConfig: {
-          maxMessageSize: 10000,
-          // The configured Executor address
-          executor: contractsConfig.ethereum.executor,
-        },
-        ulnConfig: {
-          // The number of block confirmations to wait on BSC before emitting the message from the source chain.
-          confirmations: BigInt(15),
-          // The address of the DVNs you will pay to verify a sent message on the source chain ).
-          // The destination tx will wait until ALL `requiredDVNs` verify the message.
-          requiredDVNs: [
-            contractsConfig.ethereum.horizenDVN, // Horizen
-            contractsConfig.ethereum.polyhedraDVN, // Polyhedra
-            contractsConfig.ethereum.animocaBlockdaemonDVN, // Animoca-Blockdaemon (only available on ETH <-> Arbitrum One)
-            contractsConfig.ethereum.lzDVN, // LayerZero Labs
-          ],
-          // The address of the DVNs you will pay to verify a sent message on the source chain ).
-          // The destination tx will wait until the configured threshold of `optionalDVNs` verify a message.
-          optionalDVNs: [],
-          // The number of `optionalDVNs` that need to successfully verify the message for it to be considered Verified.
-          optionalDVNThreshold: 0,
-        },
-      },
-      // Optional Receive Configuration
-      // @dev Controls how the `from` chain receives messages from the `to` chain.
-      receiveConfig: {
-        ulnConfig: {
-          // The number of block confirmations to expect from the `to` chain.
-          confirmations: BigInt(20),
-          // The address of the DVNs your `receiveConfig` expects to receive verifications from on the `from` chain ).
-          // The `from` chain's OApp will wait until the configured threshold of `requiredDVNs` verify the message.
-          requiredDVNs: [
-            contractsConfig.ethereum.lzDVN, // LayerZero Labs DVN
-            contractsConfig.ethereum.animocaBlockdaemonDVN, // Blockdaemon-Animoca
-            contractsConfig.ethereum.horizenDVN, // Horizen Labs
-            contractsConfig.ethereum.polyhedraDVN, // Polyhedra
-          ],
-          // The address of the `optionalDVNs` you expect to receive verifications from on the `from` chain ).
-          // The destination tx will wait until the configured threshold of `optionalDVNs` verify the message.
-          optionalDVNs: [],
-          // The number of `optionalDVNs` that need to successfully verify the message for it to be considered Verified.
-          optionalDVNThreshold: 0,
-        },
-      },
-      // Optional Enforced Options Configuration
-      // @dev Controls how much gas to use on the `to` chain, which the user pays for on the source `from` chain.
-      enforcedOptions: [
-        {
-          msgType: 1,
-          optionType: ExecutorOptionType.LZ_RECEIVE,
-          gas: 65000,
-          value: 0,
-        },
-        {
-          msgType: 2,
-          optionType: ExecutorOptionType.LZ_RECEIVE,
-          gas: 65000,
-          value: 0,
-        },
-        {
-          msgType: 2,
-          optionType: ExecutorOptionType.COMPOSE,
-          index: 0,
-          gas: 50000,
-          value: 0,
-        },
-      ],
-    },
-  },
-  {
-    from: arbitrumContract,
-    to: ethereumContract,
-  },
-  // ETH <--> ARB PATHWAY: END
-];
-```
-
-Finally, define lzRead configurations for each contract
-
-```typescript
-contracts: [
-  {
-    contract: arbitrumContract,
-    config: {
-      readChannelConfigs: [
-        {
-          channelId: 4294967295,
-          readLibrary: contractsConfig.arbitrum.readLib1002
-          active: true,
-          ulnConfig: {
-            // The address of the Executor that will deliver the message
-            executor: contractConfig.arbitrum.lzExecutor
-            // The address of the DVNs your `receiveConfig` expects to receive verifications from on the `from` chain ).
-            // The `from` chain's OApp will wait until the configured threshold of `requiredDVNs` verify the message.
-            requiredDVNs: [
-              contractsConfig.arbitrum.lzDVN, // LayerZero Labs DVN
-              contractsConfig.arbitrum.nethermindDVN, // Nethermind DVN
-            ],
-            // The address of the `optionalDVNs` you expect to receive verifications from on the `from` chain ).
-            // The destination tx will wait until the configured threshold of `optionalDVNs` verify the message.
-            optionalDVNs: [],
-            // The number of `optionalDVNs` that need to successfully verify the message for it to be considered Verified.
-            optionalDVNThreshold: 0,
-          },
-          // Optional Enforced Options Configuration
-          // @dev Controls how much gas to use when delivering the resolved payload, as well as the expected size of the payload
-          enforcedOptions: [
-            {
-              msgType: 1,
-              optionType: ExecutorOptionType.LZ_READ,
-              gas: 65000,
-              value: 0,
-              size: 100,
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    contract: ethereumContract,
-  },
-],
-```
-
-To set these config settings, run:
-
-```bash
-npx hardhat lz:oapp-read:wire --oapp-config layerzero.config.ts
-```
-
-<p align="center">
-  Join our community on <a href="https://discord-layerzero.netlify.app/discord" style="color: #a77dff">Discord</a> | Follow us on <a href="https://twitter.com/LayerZero_Labs" style="color: #a77dff">Twitter</a>
-</p>
+<img src="./public/poly-swap-logo.jpg" width="50%">
+
+# poly-swap-core
+
+PolySwap solves an important consumer hurdle. The crypto market regularly lives through periods of market volatility caused by large events related to politics, sports or other. Let's take the example of the latest US election. Many predicted that the election of Donald Trump would lead to a crypto pump and were in the need to swap from stable coins to various crypto currencies as soon as the result would approach finality in order to benefit from the price action.
+
+This was easier said than done as you would need to manually make all swaps at the right time.
+
+PolySwap allows you to trustlessly and automatically pull data from prediction markets to trigger DeFi swaps across chains.
+
+## Authors
+
+- [Lucas Leclerc](https://github.com/Intermarch3)
+- [Pierre Guéveneux](https://github.com/Pierregvx)
+- [Baptiste Florentin](https://pyba.st)
+
+## Technologies
+
+- LayerZero read functionnality 🪨
+
+Allows any chain to trustlessly read the state of Polymarket on the Polygon blockchain.
+
+- CoW Swap's intent based and programmatic DeFi swaps 🪨
+
+It allows for seamless automation of processes and prevents from overloading the LayerZero read execution callback.
+
+- Polymarket 🪨
+
+Allows access to reliable predictions backed by deep liquidity to trigger user's swaps. We use their API in the frontend to allow users to choose their preferred markets.
+
+- Telegram 🪨
+
+Our frontend is compatible with the telegram mini-app format.
+
+- Dynamic 🪨
+
+For easy wallet connection and user experience across devices
+
+## Technologies
+
+- Circle's CCTP 🐣
+
+For whales, moving USDC coins to the chains with most liquidity before swapping is key to a good liquidity management. CCTP is the solution to allow for easy and secure native briding backed by LayerZero's multichain read functionnality.
+
+- Euler Deposit 🐣
+
+To access the best APYs during low volatility times, Euler's lending platform is a no brainer. Our telegram mini-app is especially interesting to bring great UX to lending and borrowing.
+
+🪨 Implemented
+
+🐣 Upcoming
+
+## Architecture
+
+<img src="./public/architecture.png" />
+
+## Contracts
+
+| Chain             | address                                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Sepolia arbistrum | [0xc3b689cB1DA423025953d70961b623773a4Cb3Ae](https://sepolia.arbiscan.io/address/0xc3b689cB1DA423025953d70961b623773a4Cb3Ae) |
+
+## Transaction Examples
+
+Deployment: [0x234e1965d0f6728807c803e2f41c1740c1ae4bb8f4618b2359908fea27bec7e0](https://sepolia.arbiscan.io/tx/0x234e1965d0f6728807c803e2f41c1740c1ae4bb8f4618b2359908fea27bec7e0)
+
+Solver Execution: [0xbb7c56ee10380965d2c2954de9c5dcbefecca66cc5a4f100126bdacbfebf901f](https://sepolia.arbiscan.io/tx/0xbb7c56ee10380965d2c2954de9c5dcbefecca66cc5a4f100126bdacbfebf901f)
+
+LayerZero Read Request
+[0xbb7c56ee10380965d2c2954de9c5dcbefecca66cc5a4f100126bdacbfebf901f](https://layerzeroscan.com/tx/0xbb7c56ee10380965d2c2954de9c5dcbefecca66cc5a4f100126bdacbfebf901f)
+
+LayerZero Read Callback
+[0x6586fcb98518dbad0321d235df9f83971259edaba455f6f4ccf3f2e903e2bf5f](https://sepolia.arbiscan.io/tx/0x6586fcb98518dbad0321d235df9f83971259edaba455f6f4ccf3f2e903e2bf5f)
+
+## Limitations
+
+- LZ read to Polygon is not accessible on mainnet so we proved the concept by reading from an ERC20 token on Base Sepolia
+- Security was not prioritized during this hackathon, there is a lot of improvements to be made in this sense
+- The app is not fully connected yet, we would need to add an indexing solution
+- We only allow for a single type of swap yet, allowing modularity in the possible swaps and even allowing broader web3 actions would be an interesting area to explore
