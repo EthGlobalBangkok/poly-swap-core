@@ -5,7 +5,7 @@ import {ICoWSwapSettlement} from "./interfaces/ICoWSwapSettlement.sol";
 import {ERC1271_MAGIC_VALUE, IERC1271} from "./interfaces/IERC1271.sol";
 // import { IERC20 } from "./interfaces/IERC20.sol";
 //import { GPv2Order } from "./vendored/GPv2Order.sol";
-import {GPv2Order, IERC20} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+import {GPv2Order, IERC20} from "contracts/libraries/GPv2Order.sol";
 import {ICoWSwapOnchainOrders} from "./vendored/ICoWSwapOnchainOrders.sol";
 import {BaseConditionalOrder} from "composable-cow/src/BaseConditionalOrder.sol";
 import {ComposableCoW} from "composable-cow/src/ComposableCoW.sol";

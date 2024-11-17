@@ -1,1 +1,3 @@
-cowprotocol/contracts/=cowprotocol/contracts/src/contracts/
+cowprotocol/contracts/=lib/contracts/src/contracts/
+safe/handler=lib/composable-cow/lib/safe/
+safe/handler/ExtensibleFallbackHandler.sol=lib/composable-cow/lib/safe/contracts/handler/ExtensibleFallbackHandler.sol

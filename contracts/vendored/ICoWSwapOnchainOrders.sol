@@ -6,7 +6,7 @@
 pragma solidity ^0.8.17;
 
 // import "./GPv2Order.sol";
-import {GPv2Order} from "../../lib/cow-contracts/src/contracts/libraries/GPv2Order.sol";
+import {GPv2Order} from "contracts/contracts/libraries/GPv2Order.sol";
 
 /// @title CoW Swap Onchain Order Creator Interface
 /// @author CoW Swap Developers
