@@ -1,5 +1,6 @@
 const { ethers } = require("hardhat");
 
+// address of depoyed settlement and composable cow contracts
 const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 const COMPOSABLE_COW = "0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74";
 
