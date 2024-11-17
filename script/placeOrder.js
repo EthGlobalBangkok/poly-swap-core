@@ -24,12 +24,12 @@ async function main() {
   const walletClient = createWalletClient({
     chain: gnosis,
     account,
-    transport: http("https://gnosis-mainnet.g.alchemy.com/v2/RWAHqBV91p-N1AwdjyjksJUjxEogXOCn"),
+    transport: http(),
   });
 
   const publicClient = createPublicClient({
     chain: gnosis,
-    transport: http("https://gnosis-mainnet.g.alchemy.com/v2/RWAHqBV91p-N1AwdjyjksJUjxEogXOCn"),
+    transport: http(),
   });
 
   // const weth = await getContract({
@@ -53,6 +53,7 @@ async function main() {
   //   }
   // });
 
+  // fill in the order object
   const now = Math.floor(Date.now() / 1000);
   const order = {
     sellToken: WETH,
@@ -75,6 +76,8 @@ async function main() {
   let pl;
   let inst;
   let receipt
+
+  // call the OrderFactory contract to place the order
   try {
     const { result, request } = await publicClient.simulateContract({
       address: ORDER_FACTORY,
@@ -107,6 +110,7 @@ async function main() {
     process.exit(1);
   }
 
+  // Transfer the sell token to the Order contract
   const tokenTx = walletClient.writeContract({
     address: WETH,
     abi: IERC20ABI,
@@ -117,37 +121,6 @@ async function main() {
     const receiptToken = await publicClient.waitForTransactionReceipt({ hash: tokenTx });
     console.log('Token Receipt:', receiptToken);
   });
-
-  // const { args: onchain } = orderEvent;
-
-  // const offchain = {
-  //   from: onchain.sender,
-  //   sellToken: onchain.order.sellToken,
-  //   buyToken: onchain.order.buyToken,
-  //   receiver: onchain.order.receiver,
-  //   sellAmount: onchain.order.sellAmount.toString(),
-  //   buyAmount: onchain.order.buyAmount.toString(),
-  //   validTo: onchain.order.validTo,
-  //   appData: onchain.order.appData,
-  //   feeAmount: onchain.order.feeAmount.toString(),
-  //   kind: 'sell',
-  //   partiallyFillable: onchain.order.partiallyFillable,
-  //   sellTokenBalance: 'erc20',
-  //   buyTokenBalance: 'erc20',
-  //   signingScheme: 'eip1271',
-  //   signature: onchain.signature.data,
-  // };
-
-  // const response = await fetch('https://api.WETH.fi/arbitrum_one/api/v1/orders', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify(offchain),
-  // });
-
-  // const orderUid = await response.json();
-  // console.log(orderUid);
 }
 
 main().catch((error) => {
